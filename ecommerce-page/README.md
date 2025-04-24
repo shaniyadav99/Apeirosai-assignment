@@ -4,7 +4,7 @@ A modern e-commerce application built with React and Tailwind CSS that allows us
 
 ## 🚀 Live Demo
 
-[Deployment Link Coming Soon]
+[Live Demo](https://apeirosai-assignment.vercel.app/)
 
 ## ✨ Features
 
@@ -133,11 +133,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
 - [Lucide React](https://lucide.dev/) for the beautiful icons
 - [IP Geolocation API](https://ipgeolocation.io/) for location services
-
-## 📞 Contact
-
-For any queries or suggestions, please feel free to reach out!
-
----
-
-Made with ❤️ by [Your Name]
