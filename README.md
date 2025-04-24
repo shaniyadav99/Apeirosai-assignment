@@ -4,7 +4,7 @@ A modern e-commerce application built with React and Tailwind CSS that allows us
 
 ## 🚀 Live Demo
 
-[Deployment Link Coming Soon]
+[Live Demo](https://apeirosai-assignment.vercel.app/)
 
 ## ✨ Features
 

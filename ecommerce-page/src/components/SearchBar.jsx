@@ -17,15 +17,15 @@ const SearchBar = ({ onSearch }) => {
   };
 
   return (
-    <div>
+    <div className="relative">
       {showSearch ? (
-        <form onSubmit={handleSearch} className="flex items-center">
+        <form onSubmit={handleSearch} className="flex items-center w-full max-w-[200px] sm:max-w-[300px]">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search products..."
-            className="px-3 py-1 text-black rounded-l-md focus:outline-none"
+            className="w-full px-3 py-1 text-sm text-black rounded-l-md focus:outline-none"
             autoFocus
           />
           <button
