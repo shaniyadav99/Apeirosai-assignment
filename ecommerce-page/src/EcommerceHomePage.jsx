@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, ShoppingBag, ChevronRight, Search, Heart, Home, User, Filter, ArrowDownCircle, X, ShoppingCart, Clock, Menu } from 'lucide-react';
 import React from 'react';
+import TopNavbar from './components/TopNavbar';
+import LocationHeader from './components/LocationHeader';
+import FilterSection from './components/FilterSection';
+import OfferSection from './components/OfferSection';
+import BottomNavbar from './components/BottomNavbar';
 
 export default function EcommerceHomePage() {
   const [location, setLocation] = useState({ latitude: 37.7749, longitude: -122.4194, city: "San Francisco" });
@@ -8,11 +13,18 @@ export default function EcommerceHomePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [cart, setCart] = useState([]);
-  const [sortBy, setSortBy] = useState('distance'); // distance, popularity
+  const [sortBy, setSortBy] = useState('distance');
   const [showFilters, setShowFilters] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
   const [offerData, setOfferData] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState([
+    { id: 'delivery', label: 'Delivery', active: true },
+    { id: 'pickup', label: 'Pickup', active: false },
+    { id: 'open', label: 'Open Now', active: false },
+    { id: 'offers', label: 'Offers', active: false },
+  ]);
   const pullToRefreshRef = useRef(null);
   const startY = useRef(0);
 
@@ -79,6 +91,34 @@ export default function EcommerceHomePage() {
         "NaturalMarket", "HealthPharm", "QuickCare", "MedExpress", "BeautyHealth",
         "PetCorner", "KidsMart"
       ];
+
+      // Image URLs for different categories
+      const categoryImages = {
+        grocery: [
+          "https://media.istockphoto.com/id/1413204314/photo/happy-man-at-supermarket-store.jpg?s=612x612&w=0&k=20&c=Dn5UI46Z6UmBx2n9kYg56jObHBYoQtxcLjS5ukEuXCE=",
+          "https://media.istockphoto.com/id/1157106624/photo/all-your-necessities-stored-in-one-place.jpg?s=612x612&w=0&k=20&c=fANV-CP9N_Dt5lVoKWiZdAch60-2IOeHEm_pnvgk348=",
+          "https://media.istockphoto.com/id/521812367/photo/stocked-shelves-in-grocery-store-aisle.jpg?s=612x612&w=0&k=20&c=blKzsyPv0wvd57hqMniFaHALwU6Skx4lq9o4D2QcBBM=",
+          "https://media.istockphoto.com/id/1310446879/photo/grocery-store.jpg?s=612x612&w=0&k=20&c=nIEV-UoHxJDP4a8NSoNYVmWqrPQj0RqNily0Yo625Ao="
+        ],
+        pharmacy: [
+          "https://media.istockphoto.com/id/1478342446/photo/black-happy-woman-choosing-smartphone-in-shop.jpg?s=612x612&w=0&k=20&c=vgd3uNTcbdwSHAm8z8ZapGF0FHBGxT7QpM6TKJqOfqw=",
+          "https://media.istockphoto.com/id/1405392560/photo/a-shopping-cart-by-a-store-shelf-in-a-supermarket.jpg?s=612x612&w=0&k=20&c=oexmPSYVT814OFCHncXD9yH1t66jbJbvTwbGfikV-mw=",
+          "https://media.istockphoto.com/id/1371981344/photo/buying-convenient-food.jpg?s=612x612&w=0&k=20&c=Y0oyIBPf8E-0VLwGBaiey85KwvzLlfhXdq5txvXxNdU=",
+          "https://media.istockphoto.com/id/1413204314/photo/happy-man-at-supermarket-store.jpg?s=612x612&w=0&k=20&c=Dn5UI46Z6UmBx2n9kYg56jObHBYoQtxcLjS5ukEuXCE="
+        ],
+        essentials: [
+          "https://media.istockphoto.com/id/1157106624/photo/all-your-necessities-stored-in-one-place.jpg?s=612x612&w=0&k=20&c=fANV-CP9N_Dt5lVoKWiZdAch60-2IOeHEm_pnvgk348=",
+          "https://media.istockphoto.com/id/521812367/photo/stocked-shelves-in-grocery-store-aisle.jpg?s=612x612&w=0&k=20&c=blKzsyPv0wvd57hqMniFaHALwU6Skx4lq9o4D2QcBBM=",
+          "https://media.istockphoto.com/id/1310446879/photo/grocery-store.jpg?s=612x612&w=0&k=20&c=nIEV-UoHxJDP4a8NSoNYVmWqrPQj0RqNily0Yo625Ao=",
+          "https://media.istockphoto.com/id/1405392560/photo/a-shopping-cart-by-a-store-shelf-in-a-supermarket.jpg?s=612x612&w=0&k=20&c=oexmPSYVT814OFCHncXD9yH1t66jbJbvTwbGfikV-mw="
+        ],
+        general: [
+          "https://media.istockphoto.com/id/1371981344/photo/buying-convenient-food.jpg?s=612x612&w=0&k=20&c=Y0oyIBPf8E-0VLwGBaiey85KwvzLlfhXdq5txvXxNdU=",
+          "https://media.istockphoto.com/id/1478342446/photo/black-happy-woman-choosing-smartphone-in-shop.jpg?s=612x612&w=0&k=20&c=vgd3uNTcbdwSHAm8z8ZapGF0FHBGxT7QpM6TKJqOfqw=",
+          "https://media.istockphoto.com/id/1413204314/photo/happy-man-at-supermarket-store.jpg?s=612x612&w=0&k=20&c=Dn5UI46Z6UmBx2n9kYg56jObHBYoQtxcLjS5ukEuXCE=",
+          "https://media.istockphoto.com/id/1157106624/photo/all-your-necessities-stored-in-one-place.jpg?s=612x612&w=0&k=20&c=fANV-CP9N_Dt5lVoKWiZdAch60-2IOeHEm_pnvgk348="
+        ]
+      };
       
       const offerTitles = {
         "Top Offers Near You": [
@@ -109,19 +149,28 @@ export default function EcommerceHomePage() {
           const price = Math.floor(Math.random() * 50) + 5;
           const discount = Math.floor(Math.random() * 30) + 10;
           
+          // Determine category and get appropriate image
+          const offerCategory = category.toLowerCase().includes("grocery") ? "grocery" : 
+                              category.toLowerCase().includes("pharmacy") ? "pharmacy" :
+                              category.toLowerCase().includes("daily") ? "essentials" : "general";
+          
+          const categoryImageArray = categoryImages[offerCategory];
+          const imageIndex = index % categoryImageArray.length;
+          
           return {
             id,
             title: offerTitles[category][index % offerTitles[category].length],
             retailer: randomRetailer,
             distance: parseFloat(distance),
-            image: `/api/placeholder/${120 + index}/${120 + index}`,
-            category: category.toLowerCase().includes("grocery") ? "grocery" : 
-                    category.toLowerCase().includes("pharmacy") ? "pharmacy" :
-                    category.toLowerCase().includes("daily") ? "essentials" : "general",
+            image: categoryImageArray[imageIndex],
+            category: offerCategory,
             price,
             discount,
             expiresIn: Math.floor(Math.random() * 72) + 1, // hours
-            popularity: Math.floor(Math.random() * 100) + 1 // score out of 100
+            popularity: Math.floor(Math.random() * 100) + 1, // score out of 100
+            deliveryAvailable: Math.random() > 0.3, // 70% chance of delivery
+            pickupAvailable: Math.random() > 0.2, // 80% chance of pickup
+            isOpen: Math.random() > 0.1 // 90% chance of being open
           };
         });
         
@@ -190,32 +239,85 @@ export default function EcommerceHomePage() {
     }
   };
 
-  // Filter offers by category
+  // Handle filter changes
+  const handleFilterChange = (filterId) => {
+    setFilters(filters.map(filter => 
+      filter.id === filterId 
+        ? { ...filter, active: !filter.active }
+        : filter
+    ));
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setFilters(filters.map(filter => ({ ...filter, active: false })));
+  };
+
+  // Filter offers based on search query, category, and active filters
   const filteredOfferSections = offerData.map(section => {
-    if (filterCategory === 'all') {
-      return section;
-    }
-    
+    const filteredOffers = section.offers.filter(offer => {
+      // Check search query
+      const matchesSearch = !searchQuery || 
+        offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.retailer.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Check category
+      const matchesCategory = filterCategory === 'all' || offer.category === filterCategory;
+
+      // Check delivery/pickup filters
+      const deliveryFilter = filters.find(f => f.id === 'delivery');
+      const pickupFilter = filters.find(f => f.id === 'pickup');
+      const matchesDelivery = !deliveryFilter?.active || offer.deliveryAvailable;
+      const matchesPickup = !pickupFilter?.active || offer.pickupAvailable;
+
+      // Check open now filter
+      const openFilter = filters.find(f => f.id === 'open');
+      const matchesOpen = !openFilter?.active || offer.isOpen;
+
+      // Check offers filter
+      const offersFilter = filters.find(f => f.id === 'offers');
+      const matchesOffers = !offersFilter?.active || offer.discount > 0;
+
+      // Only apply filters if they are active
+      const hasActiveFilters = filters.some(filter => filter.active);
+      if (!hasActiveFilters) {
+        return matchesSearch && matchesCategory;
+      }
+
+      return matchesSearch && matchesCategory && matchesDelivery && matchesPickup && matchesOpen && matchesOffers;
+    });
+
     return {
       ...section,
-      offers: section.offers.filter(offer => offer.category === filterCategory)
+      offers: filteredOffers
     };
-  });
+  }).filter(section => section.offers.length > 0);
 
   // Sort offers by selected criterion
   const sortedOfferSections = filteredOfferSections.map(section => {
     return {
       ...section,
       offers: [...section.offers].sort((a, b) => {
-        if (sortBy === 'distance') {
-          return a.distance - b.distance;
-        } else if (sortBy === 'popularity') {
-          return b.popularity - a.popularity;
+        switch (sortBy) {
+          case 'distance':
+            return a.distance - b.distance;
+          case 'popularity':
+            return b.popularity - a.popularity;
+          case 'price_asc':
+            return a.price - b.price;
+          case 'price_desc':
+            return b.price - a.price;
+          default:
+            return 0;
         }
-        return 0;
       })
     };
   });
+
+  // Handle search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   // Skeleton loading component
   const SkeletonLoading = () => (
@@ -287,353 +389,49 @@ export default function EcommerceHomePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Pull to refresh indicator */}
-      {refreshing && (
-        <div className="fixed top-0 left-0 right-0 flex items-center justify-center p-2 bg-blue-500 z-50">
-          <ArrowDownCircle className="w-5 h-5 mr-2 text-white animate-spin" />
-          <span className="text-white">Refreshing...</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-gray-100 pb-16">
+      <TopNavbar 
+        cart={cart}
+        favorites={favorites}
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        onSearch={handleSearch}
+      />
+      
+      <LocationHeader 
+        location={location}
+        onLocationClick={() => alert('Location selection')}
+      />
+      
+      <FilterSection 
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+        onSortChange={setSortBy}
+        sortBy={sortBy}
+      />
 
-      {/* Top Navigation Bar */}
-      <div className="bg-blue-600 text-white">
-        <div className="flex items-center justify-between p-3">
-          <div className="flex items-center">
-            <button 
-              className="mr-3"
-              onClick={() => setShowMenu(!showMenu)}
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            <span className="text-lg font-bold">ShopNearby</span>
+      <div className="p-4">
+        {sortedOfferSections.map((section) => (
+          <OfferSection
+            key={section.title}
+            section={section}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            onAddToCart={addToCart}
+            loading={loading}
+          />
+        ))}
+        {sortedOfferSections.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No offers found matching your search criteria.</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <button>
-              <Search className="w-5 h-5" />
-            </button>
-            <button className="relative" onClick={() => alert(`${cart.length} items in cart`)}>
-              <ShoppingCart className="w-5 h-5" />
-              {cart.length > 0 && (
-                <span className="absolute top-0 right-0 flex items-center justify-center w-4 h-4 text-xs text-white bg-red-500 rounded-full transform translate-x-1 -translate-y-1">
-                  {cart.length}
-                </span>
-              )}
-            </button>
-            <button onClick={() => alert(`${favorites.length} favorite offers`)}>
-              <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'text-red-200' : 'text-white'}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Category Navigation */}
-        <div className="flex overflow-x-auto hide-scrollbar pb-2 px-2">
-          {['All', 'Grocery', 'Pharmacy', 'Fashion', 'Tech', 'Food', 'Home'].map((cat) => (
-            <button
-              key={cat}
-              className={`px-3 py-1 mx-1 text-xs font-medium rounded-full whitespace-nowrap ${
-                cat.toLowerCase() === filterCategory || (cat === 'All' && filterCategory === 'all')
-                  ? 'bg-white text-blue-600' 
-                  : 'bg-blue-500 text-white'
-              }`}
-              onClick={() => setFilterCategory(cat === 'All' ? 'all' : cat.toLowerCase())}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        )}
       </div>
 
-      {/* Side Menu */}
-      {showMenu && (
-        <div className="fixed inset-0 z-50 flex">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMenu(false)}
-          ></div>
-          <div className="relative w-64 max-w-xs bg-white h-full shadow-xl animate-slideRight">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-bold">Menu</h2>
-              <button onClick={() => setShowMenu(false)}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="py-2">
-              {['Home', 'Categories', 'Deals', 'Orders', 'Wishlist', 'Account', 'Settings', 'Help'].map((item) => (
-                <button 
-                  key={item}
-                  className="flex items-center w-full px-4 py-3 text-left hover:bg-gray-100"
-                  onClick={() => {
-                    alert(`Navigating to ${item}`);
-                    setShowMenu(false);
-                  }}
-                >
-                  <span>{item}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Location Header */}
-      <header className="sticky top-0 z-10 bg-white shadow-sm">
-        <div className="flex items-center p-4">
-          <div className="flex items-center flex-1">
-            <MapPin className="w-5 h-5 text-blue-500" />
-            <span className="ml-1 text-sm font-medium">
-              {location.city || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
-            </span>
-          </div>
-        </div>
-        
-        {/* Search Bar */}
-        <div className="flex items-center px-4 pb-3">
-          <div className="flex items-center flex-1 px-3 py-2 bg-gray-100 rounded-lg">
-            <Search className="w-5 h-5 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search for products, stores, offers..." 
-              className="w-full ml-2 text-sm bg-transparent outline-none"
-            />
-          </div>
-          <button 
-            className="flex items-center justify-center w-10 h-10 ml-2 text-blue-500"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Filter options */}
-        {showFilters && (
-          <div className="px-4 py-3 bg-white border-t border-gray-100 animate-slideDown">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium">Filter & Sort</h3>
-              <button onClick={() => setShowFilters(false)}>
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="mb-3">
-              <p className="mb-2 text-sm font-medium text-gray-700">Categories</p>
-              <div className="flex flex-wrap gap-2">
-                {['all', 'grocery', 'pharmacy', 'essentials', 'general'].map((category) => (
-                  <button
-                    key={category}
-                    className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      filterCategory === category 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
-                    onClick={() => setFilterCategory(category)}
-                  >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium text-gray-700">Sort By</p>
-              <div className="flex gap-2">
-                <button
-                  className={`px-3 py-1 text-xs font-medium rounded-full ${
-                    sortBy === 'distance' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                  onClick={() => setSortBy('distance')}
-                >
-                  Nearest
-                </button>
-                <button
-                  className={`px-3 py-1 text-xs font-medium rounded-full ${
-                    sortBy === 'popularity' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                  onClick={() => setSortBy('popularity')}
-                >
-                  Most Popular
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 pb-16" ref={pullToRefreshRef}>
-        {/* Hero Banner */}
-        <div className="p-4">
-          <div className="relative overflow-hidden rounded-lg h-36 bg-gradient-to-r from-blue-500 to-blue-600">
-            <div className="absolute inset-0 flex flex-col justify-center p-6">
-              <h2 className="text-xl font-bold text-white">Welcome Back!</h2>
-              <p className="mt-1 text-sm text-blue-100">We found {sortedOfferSections.reduce((total, section) => total + section.offers.length, 0)} great deals near you.</p>
-              <button className="flex items-center justify-center px-4 py-1 mt-3 text-sm font-medium text-blue-500 bg-white rounded-full shadow-md hover:bg-blue-50 transition-colors duration-200 w-36">
-                Shop Now
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter status indicators */}
-        {(filterCategory !== 'all' || sortBy !== 'distance') && (
-          <div className="flex items-center px-4 mb-2">
-            <p className="text-xs text-gray-500">
-              {filterCategory !== 'all' && `Filtering: ${filterCategory.charAt(0).toUpperCase() + filterCategory.slice(1)}`}
-              {filterCategory !== 'all' && sortBy !== 'distance' && ' | '}
-              {sortBy !== 'distance' && `Sorting: ${sortBy === 'popularity' ? 'Most Popular' : 'Nearest'}`}
-            </p>
-            <button 
-              className="ml-2 text-xs text-blue-500"
-              onClick={() => {
-                setFilterCategory('all');
-                setSortBy('distance');
-              }}
-            >
-              Reset
-            </button>
-          </div>
-        )}
-
-        {/* Offer Sections */}
-        {sortedOfferSections.map((section) => (
-          section.offers.length > 0 && (
-            <section key={section.title} className="mt-2 mb-6">
-              <div className="flex items-center justify-between px-4 mb-2">
-                <h2 className="text-lg font-bold">{section.title}</h2>
-                <button className="flex items-center text-sm font-medium text-blue-500">
-                  See All <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="pl-4 overflow-x-auto hide-scrollbar">
-                <div className="flex gap-3 pb-2">
-                  {section.offers.map((offer) => (
-                    <div 
-                      key={offer.id} 
-                      className="flex-shrink-0 w-36 overflow-hidden bg-white rounded-lg shadow-sm transform transition-transform duration-200 hover:scale-105"
-                    >
-                      <div className="relative">
-                        <img 
-                          src={offer.image} 
-                          alt={offer.title}
-                          className="object-cover w-full h-28"
-                        />
-                        <button 
-                          className="absolute top-2 right-2 p-1 bg-white bg-opacity-70 rounded-full transition-colors duration-200"
-                          onClick={() => toggleFavorite(offer.id)}
-                        >
-                          <Heart className={`w-4 h-4 ${favorites.includes(offer.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'}`} />
-                        </button>
-                        <div className="absolute top-2 left-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">
-                          {offer.discount}% OFF
-                        </div>
-                      </div>
-                      <div className="p-2">
-                        <h3 className="font-medium text-gray-800 truncate">{offer.title}</h3>
-                        <p className="text-sm text-gray-600 truncate">{offer.retailer}</p>
-                        <div className="flex items-center mt-1 mb-1 text-xs text-gray-500">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {offer.distance} km away
-                        </div>
-                        <div className="flex items-center mb-2 text-xs text-gray-500">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Expires in {offer.expiresIn}h
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-xs line-through text-gray-400">${(offer.price * (100 / (100 - offer.discount))).toFixed(2)}</span>
-                            <span className="ml-1 text-sm font-bold text-blue-600">${offer.price}</span>
-                          </div>
-                          <button 
-                            className="p-1 text-white bg-blue-500 rounded-full transition-colors duration-200 hover:bg-blue-600"
-                            onClick={() => addToCart(offer)}
-                          >
-                            <ShoppingBag className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )
-        ))}
-
-        {/* Empty state for filtered results */}
-        {sortedOfferSections.every(section => section.offers.length === 0) && (
-          <div className="flex flex-col items-center justify-center p-8">
-            <Search className="w-12 h-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">No offers found with the current filters</p>
-            <button 
-              className="px-4 py-2 mt-3 font-medium text-white bg-blue-500 rounded-lg"
-              onClick={() => {
-                setFilterCategory('all');
-                setSortBy('distance');
-              }}
-            >
-              Reset Filters
-            </button>
-          </div>
-        )}
-      </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="flex justify-around">
-          <button className="flex flex-col items-center justify-center flex-1 py-2 text-blue-500">
-            <Home className="w-6 h-6" />
-            <span className="mt-1 text-xs font-medium">Home</span>
-          </button>
-          <button className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500">
-            <Search className="w-6 h-6" />
-            <span className="mt-1 text-xs font-medium">Search</span>
-          </button>
-          <button className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 relative">
-            <ShoppingBag className="w-6 h-6" />
-            {cart.length > 0 && (
-              <span className="absolute top-1 right-6 flex items-center justify-center w-4 h-4 text-xs text-white bg-red-500 rounded-full">
-                {cart.length}
-              </span>
-            )}
-            <span className="mt-1 text-xs font-medium">Orders</span>
-          </button>
-          <button className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500">
-            <User className="w-6 h-6" />
-            <span className="mt-1 text-xs font-medium">Account</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Add custom CSS for scroll behavior and animations */}
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        @keyframes slideDown {
-          from { max-height: 0; opacity: 0; }
-          to { max-height: 300px; opacity: 1; }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out forwards;
-          overflow: hidden;
-        }
-        @keyframes slideRight {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
-        }
-        .animate-slideRight {
-          animation: slideRight 0.3s ease-out forwards;
-        }
-      `}</style>
+      <BottomNavbar />
     </div>
   );
 }
