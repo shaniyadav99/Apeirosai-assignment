@@ -8,7 +8,14 @@ import OfferSection from './components/OfferSection';
 import BottomNavbar from './components/BottomNavbar';
 
 export default function EcommerceHomePage() {
-  const [location, setLocation] = useState({ latitude: 37.7749, longitude: -122.4194, city: "San Francisco" });
+  const [location, setLocation] = useState({ 
+    latitude: 37.7749, 
+    longitude: -122.4194, 
+    city: "San Francisco",
+    state: "",
+    country: "",
+    fullAddress: ""
+  });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -51,21 +58,34 @@ export default function EcommerceHomePage() {
       const response = await fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`);
       const data = await response.json();
       
-      if (data && data.latitude && data.longitude) {
+      if (data) {
         setLocation({
           latitude: parseFloat(data.latitude),
           longitude: parseFloat(data.longitude),
-          city: data.city
+          city: data.city,
+          state: data.state_prov,
+          country: data.country_name,
+          fullAddress: `${data.city}, ${data.state_prov}, ${data.country_name}`
         });
       } else {
         // Fallback to browser geolocation if API fails
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
+              // Use reverse geocoding to get address details
+              const { latitude, longitude } = position.coords;
+              const reverseGeocodeResponse = await fetch(
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+              );
+              const reverseData = await reverseGeocodeResponse.json();
+              
               setLocation({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                city: "Current Location"
+                latitude,
+                longitude,
+                city: reverseData.city || "Current Location",
+                state: reverseData.principalSubdivision || "",
+                country: reverseData.countryName || "",
+                fullAddress: `${reverseData.city || "Current Location"}, ${reverseData.principalSubdivision || ""}, ${reverseData.countryName || ""}`
               });
             },
             () => {

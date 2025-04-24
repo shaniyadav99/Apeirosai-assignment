@@ -1,16 +1,17 @@
 import React from 'react';
-import { MapPin, ChevronRight } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 const LocationHeader = ({ location, onLocationClick }) => {
   return (
     <div className="bg-white p-3 border-b">
       <button 
-        className="flex items-center text-gray-700"
         onClick={onLocationClick}
+        className="flex items-center text-sm text-gray-700"
       >
         <MapPin className="w-4 h-4 mr-1" />
-        <span className="text-sm font-medium">{location.city}</span>
-        <ChevronRight className="w-4 h-4" />
+        <span className="truncate max-w-[200px] sm:max-w-[300px]">
+          {location.fullAddress || `${location.city}, ${location.state}, ${location.country}`}
+        </span>
       </button>
     </div>
   );
